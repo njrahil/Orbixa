@@ -1,226 +1,110 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Orbixa Pro Store</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+import { useState } from "react";
 
-  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+export default function ShopVerse() {
+  const [cart, setCart] = useState([]);
+  const [open, setOpen] = useState(false);
 
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #000000, #12001f, #1a0033);
-      color: #e6ccff;
+  const products = [
+    { id: 1, name: "Premium T-Shirt", price: 20 },
+    { id: 2, name: "Running Shoes", price: 50 },
+    { id: 3, name: "Smart Watch", price: 80 },
+    { id: 4, name: "Wireless Headphones", price: 60 },
+    { id: 5, name: "Backpack", price: 35 },
+    { id: 6, name: "Cap", price: 15 },
+  ];
+
+  function addToCart(p) {
+    const exists = cart.find(i => i.id === p.id);
+    if (exists) {
+      setCart(cart.map(i => i.id === p.id ? { ...i, qty: i.qty + 1 } : i));
+    } else {
+      setCart([...cart, { ...p, qty: 1 }]);
     }
-
-    h1 {
-      text-align: center;
-      color: #b46cff;
-      text-shadow: 0 0 10px #7a2cff;
-      margin: 15px 0;
-    }
-
-    /* PRODUCTS */
-    .products {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 15px;
-      padding: 15px;
-    }
-
-    .card {
-      background: rgba(20, 0, 40, 0.8);
-      border: 1px solid #7a2cff55;
-      border-radius: 15px;
-      padding: 15px;
-      text-align: center;
-      transition: 0.3s;
-    }
-
-    .card:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 20px #a64dff66;
-    }
-
-    button {
-      margin-top: 8px;
-      width: 100%;
-      padding: 8px;
-      background: linear-gradient(45deg, #6a00ff, #b300ff);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    /* CART */
-    .cart {
-      position: fixed;
-      right: 0;
-      top: 0;
-      width: 300px;
-      height: 100%;
-      background: rgba(10,0,20,0.95);
-      border-left: 2px solid #7a2cff;
-      padding: 15px;
-      overflow-y: auto;
-    }
-
-    .cart h2 {
-      text-align: center;
-      color: #b46cff;
-    }
-
-    .item {
-      display: flex;
-      justify-content: space-between;
-      margin: 10px 0;
-      font-size: 14px;
-    }
-
-    .qty-btn {
-      padding: 2px 6px;
-      margin: 0 3px;
-      cursor: pointer;
-    }
-
-    .total {
-      margin-top: 10px;
-      font-weight: bold;
-      text-align: center;
-    }
-
-    .checkout {
-      margin-top: 10px;
-      background: green;
-      padding: 10px;
-      border-radius: 8px;
-      text-align: center;
-      cursor: pointer;
-    }
-
-    /* MOBILE */
-    @media (max-width: 768px) {
-      .cart {
-        width: 100%;
-        height: 40%;
-        bottom: 0;
-        top: auto;
-      }
-    }
-  </style>
-</head>
-
-<body>
-
-<h1>🛍️ Orbixa Pro Store</h1>
-
-<div class="products">
-
-  <div class="card">
-    <h3>T-Shirt</h3>
-    <p>$20</p>
-    <button onclick="add('T-Shirt',20)">Add</button>
-  </div>
-
-  <div class="card">
-    <h3>Shoes</h3>
-    <p>$50</p>
-    <button onclick="add('Shoes',50)">Add</button>
-  </div>
-
-  <div class="card">
-    <h3>Cap</h3>
-    <p>$15</p>
-    <button onclick="add('Cap',15)">Add</button>
-  </div>
-
-</div>
-
-<!-- CART -->
-<div class="cart">
-  <h2>🛒 Cart</h2>
-  <div id="cart"></div>
-  <div class="total" id="total">Total: $0</div>
-  <div class="checkout" onclick="checkout()">Checkout</div>
-</div>
-
-<script>
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-function save() {
-  localStorage.setItem("cart", JSON.stringify(cart));
-}
-
-function add(name, price) {
-  let item = cart.find(i => i.name === name);
-  if(item) {
-    item.qty++;
-  } else {
-    cart.push({name, price, qty:1});
   }
-  save();
-  render();
-}
 
-function removeItem(name) {
-  cart = cart.filter(i => i.name !== name);
-  save();
-  render();
-}
-
-function changeQty(name, val) {
-  let item = cart.find(i => i.name === name);
-  if(item) {
-    item.qty += val;
-    if(item.qty <= 0) removeItem(name);
+  function changeQty(id, val) {
+    setCart(
+      cart
+        .map(i => i.id === id ? { ...i, qty: i.qty + val } : i)
+        .filter(i => i.qty > 0)
+    );
   }
-  save();
-  render();
-}
 
-function render() {
-  let box = document.getElementById("cart");
-  box.innerHTML = "";
-  let total = 0;
+  const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
 
-  cart.forEach(i => {
-    total += i.price * i.qty;
+  return (
+    <div className="min-h-screen bg-gray-100">
 
-    let div = document.createElement("div");
-    div.className = "item";
-    div.innerHTML = `
-      ${i.name} - $${i.price}
-      <div>
-        <button class="qty-btn" onclick="changeQty('${i.name}',-1)">-</button>
-        ${i.qty}
-        <button class="qty-btn" onclick="changeQty('${i.name}',1)">+</button>
-        <button onclick="removeItem('${i.name}')">x</button>
+      {/* NAVBAR */}
+      <div className="bg-black text-white flex items-center justify-between p-3 sticky top-0">
+        <h1 className="text-xl font-bold text-purple-400">ShopVerse</h1>
+
+        <input
+          className="w-1/2 p-2 rounded text-black"
+          placeholder="Search products..."
+        />
+
+        <button
+          onClick={() => setOpen(true)}
+          className="bg-purple-600 px-4 py-2 rounded"
+        >
+          Cart ({cart.length})
+        </button>
       </div>
-    `;
-    box.appendChild(div);
-  });
 
-  document.getElementById("total").innerText = "Total: $" + total;
+      {/* PRODUCTS */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
+        {products.map(p => (
+          <div key={p.id} className="bg-white shadow rounded-xl p-3 hover:scale-105 transition">
+            <div className="h-24 bg-purple-100 rounded mb-2"></div>
+            <h2 className="font-semibold">{p.name}</h2>
+            <p className="text-purple-600 font-bold">${p.price}</p>
+            <button
+              onClick={() => addToCart(p)}
+              className="w-full mt-2 bg-black text-white p-2 rounded"
+            >
+              Add to Cart
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* CART SIDEBAR */}
+      {open && (
+        <div className="fixed right-0 top-0 w-80 h-full bg-white shadow-lg p-4 overflow-auto">
+          
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold">Cart</h2>
+            <button onClick={() => setOpen(false)}>X</button>
+          </div>
+
+          {cart.length === 0 && (
+            <p className="mt-4 text-gray-500">Cart is empty</p>
+          )}
+
+          {cart.map(i => (
+            <div key={i.id} className="border-b py-2">
+              <h3>{i.name}</h3>
+              <p>${i.price}</p>
+
+              <div className="flex gap-2 mt-1">
+                <button onClick={() => changeQty(i.id, -1)}>-</button>
+                <span>{i.qty}</span>
+                <button onClick={() => changeQty(i.id, 1)}>+</button>
+              </div>
+            </div>
+          ))}
+
+          <h2 className="mt-4 font-bold">Total: ${total}</h2>
+
+          <button
+            className="w-full mt-3 bg-green-600 text-white p-2 rounded"
+            onClick={() => alert("Order Placed! 🚀")}
+          >
+            Checkout
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
-
-function checkout() {
-  if(cart.length === 0) {
-    alert("Cart is empty!");
-    return;
-  }
-
-  let summary = cart.map(i => `${i.name} x${i.qty}`).join("\n");
-  alert("Order Placed!\n\n" + summary);
-
-  cart = [];
-  save();
-  render();
-}
-
-render();
-</script>
-
-</body>
-</html>
